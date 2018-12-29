@@ -38,7 +38,7 @@ app.post("/login", async (req, res) => {
         }
       })
 
-      res.json({ user: user.data })
+      res.json({ user: { ...user.data, access_token: data.access_token } })
     } catch (err) {
       console.log(err)
     }

@@ -10,7 +10,9 @@ No. I have provided a live backend and I've deployed this in my server which is 
 
 This repository is running NodeJS (preferrably 8+), you can build it using docker and it will install dependencies on its own and run a working instance of express.
 
-What this script is written for is to convert the code from Github's login button, extract access-token out of it by sending a request to github, and fetch the user's credentials from that access-token.
+What this script is written for is to convert the code from Github's login button, extract access_token out of it by sending a request to github, and fetch the user's credentials from that access_token. Note that access_token is included with the user object response.
+
+`user = { ...github_user_credentials, access_token }`
 
 To illustrate the flow:
 React Login with Github Button -> Window -> Code -> React Page -> Running Instance of this Script -> User Details
