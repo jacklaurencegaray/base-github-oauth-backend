@@ -5,6 +5,9 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-syntax-object-rest-spread": "^6.13.0",
+    "babel-preset-env": "^1.7.0",
     "body-parser": "^1.18.3",
     "circular-json": "^0.5.9",
     "cors": "^2.8.5",
@@ -16,7 +19,7 @@
     "nodemon": "^1.18.9"
   },
   "scripts": {
-    "start:dev": "nodemon index.js",
-    "start": "node index.js"
+    "start:dev": "nodemon --exec babel-node index.js",
+    "start": "babel-node index.js"
   }
 }

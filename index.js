@@ -1,5 +1,5 @@
 /** This file is intentionally written as procedural since the app's scope is too small,
- * there's no error handling whatsoever.
+ * there's no extensive error handling and error message decoder whatsoever.
  */
 
 const express = require("express")
@@ -14,37 +14,63 @@ const cors = require("cors")
 
 require("dotenv").config({ path: path.resolve(__dirname, "./.env") })
 
-const GITHUB_GET_TOKEN_ENDPOINT = "https://github.com/login/oauth/access_token"
-const GITHUB_API_BASE = "https://api.github.com"
-
 app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
-app.post("/login", async (req, res) => {
-  if (req.body.code) {
-    try {
-      const response = await axios.post(GITHUB_GET_TOKEN_ENDPOINT, {
-        client_id: process.env.GITHUB_APPID,
-        client_secret: process.env.GITHUB_APPSECRET,
-        code: req.body.code
-      })
+/** For the sake of not breaking the app, we're going to return nothing when an error happens
+ *  endpoints are assumed to always work. Could do better here though.
+ */
 
-      const data = queryString.parse(response.data)
+export const errorHandler = fn => (req, res, next) =>
+  fn(req, res, next).catch(next)
 
-      const user = await axios.get(`${GITHUB_API_BASE}/user`, {
-        headers: {
-          Authorization: "Bearer " + data.access_token
-        }
-      })
+const getTokenFromCode = async code => {
+  const response = await axios.post(process.env.GITHUB_GET_TOKEN_ENDPOINT, {
+    client_id: process.env.GITHUB_APPID,
+    client_secret: process.env.GITHUB_APPSECRET,
+    code
+  })
 
-      res.json({ user: { ...user.data, access_token: data.access_token } })
-    } catch (err) {
-      console.log(err)
+  const data = queryString.parse(response.data)
+  return data.access_token
+}
+
+const getUserCredentials = async access_token => {
+  const response = await axios.get(`${process.env.GITHUB_API_BASE}/user`, {
+    headers: {
+      Authorization: "bearer " + access_token
     }
-  }
-  res.end()
-})
+  })
+  return response.data
+}
+
+app.post(
+  "/login/tokentouser",
+  errorHandler(async (req, res) => {
+    if (req.body.token) {
+      const user = await getUserCredentials(req.body.token)
+      res.json({ ...user, access_token: req.body.token })
+      res.status(200)
+    } else {
+      res.end()
+    }
+  })
+)
+
+app.post(
+  "/login/codetouser",
+  errorHandler(async (req, res) => {
+    if (req.body.code) {
+      const token = await getTokenFromCode(req.body.code)
+      const user = await getUserCredentials(token)
+      res.json({ ...user, access_token: token })
+      res.status(200)
+    } else {
+      res.end()
+    }
+  })
+)
 
 app.listen(process.env.PORT, () =>
   console.log(`Express is running at port: ${process.env.PORT}`)
