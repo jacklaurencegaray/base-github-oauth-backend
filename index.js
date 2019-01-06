@@ -11,6 +11,7 @@ const inspect = require("util").inspect
 const circularjson = require("circular-json")
 const queryString = require("query-string")
 const cors = require("cors")
+const url = require("url")
 
 require("dotenv").config({ path: path.resolve(__dirname, "./.env") })
 
@@ -45,35 +46,33 @@ const getUserCredentials = async access_token => {
   return response.data
 }
 
-app.get('/', async (req, res, next) => {
-  if(req.query.)
-  axios.post('/login/tockentouser', { req.quer })
-})
-
 app.post(
   "/login/tokentouser",
-  errorHandler(async (req, res) => {
+  errorHandler(async (req, res, next) => {
+    console.log("/login/tokentouser")
     if (req.body.token) {
       const user = await getUserCredentials(req.body.token)
       res.json({ ...user, access_token: req.body.token })
-      res.status(200)
-    } else {
-      res.end()
     }
+    res.end()
+    next()
   })
 )
 
 app.get(
-  "/login",
-  errorHandler(async (req, res) => {
+  "/login/codetouser",
+  errorHandler(async (req, res, next) => {
+    console.log("/login/codetouser")
     if (req.query.code) {
       const token = await getTokenFromCode(req.query.code)
       const user = await getUserCredentials(token)
-      res.json({ ...user, access_token: token })
-      res.status(200)
-    } else {
-      res.end()
+      const query = queryString.stringify({
+        ...user,
+        access_token: token
+      })
+      res.json({ ...user, access_token: token }).status(200)
     }
+    res.end()
   })
 )
 
