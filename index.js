@@ -47,7 +47,6 @@ const getUserCredentials = async access_token => {
 }
 
 app.post(
-  "/login/tokentouser",
   errorHandler(async (req, res, next) => {
     console.log("/login/tokentouser")
     if (req.body.token) {
@@ -59,12 +58,11 @@ app.post(
   })
 )
 
-app.get(
+app.post(
   "/login/codetouser",
   errorHandler(async (req, res, next) => {
-    console.log("/login/codetouser")
-    if (req.query.code) {
-      const token = await getTokenFromCode(req.query.code)
+    if (req.body.code) {
+      const token = await getTokenFromCode(req.body.code)
       const user = await getUserCredentials(token)
       const query = queryString.stringify({
         ...user,
