@@ -47,7 +47,7 @@ const getUserCredentials = async access_token => {
 }
 
 app.post(
-  "login/tokentouser",
+  "/login/tokentouser",
   errorHandler(async (req, res, next) => {
     if (req.body.token) {
       const user = await getUserCredentials(req.body.token)
